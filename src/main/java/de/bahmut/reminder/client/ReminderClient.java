@@ -2,7 +2,6 @@ package de.bahmut.reminder.client;
 
 import javax.imageio.ImageIO;
 import java.awt.AWTException;
-import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
@@ -14,6 +13,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import lombok.Getter;
@@ -51,10 +51,11 @@ public class ReminderClient extends Application {
         checkState(trayIcon != null, "Tray icon could ne be created");
         Platform.setImplicitExit(false);
         stage.setTitle("Reminder Client FX");
-        stage.setScene(new Scene(rootNode, 500, 300));
+        stage.setScene(new Scene(rootNode, 520, 300));
         stage.setResizable(false);
         stage.setOnCloseRequest(this::hide);
         stage.centerOnScreen();
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("icon.png")));
         stage.hide();
     }
 
@@ -65,15 +66,13 @@ public class ReminderClient extends Application {
         }
 
         final SystemTray systemTray = SystemTray.getSystemTray();
-        final Image image;
         try {
-            image = ImageIO.read(getClass().getResourceAsStream("icon.png"));
+            trayIcon = new TrayIcon(ImageIO.read(getClass().getResourceAsStream("icon.png")), "Reminder Center", createTrayMenu());
         } catch (final IOException e) {
             log.error("Could not load tray icon", e);
             return;
         }
 
-        trayIcon = new TrayIcon(image, "Reminder Center", createTrayMenu());
         trayIcon.addActionListener(e -> Platform.runLater(stage::show));
 
         try {
