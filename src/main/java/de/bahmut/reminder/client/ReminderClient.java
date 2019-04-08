@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.SystemUtils;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -29,10 +30,13 @@ import static com.google.common.base.Preconditions.checkState;
 @SpringBootApplication
 public class ReminderClient extends Application {
 
+    public static final String NAME = "Reminder Client FX";
+
     @Getter
     private static TrayIcon trayIcon;
 
     private Stage stage;
+
     private Parent rootNode;
 
     @Override
@@ -50,7 +54,7 @@ public class ReminderClient extends Application {
         createTrayIcon();
         checkState(trayIcon != null, "Tray icon could ne be created");
         Platform.setImplicitExit(false);
-        stage.setTitle("Reminder Client FX");
+        stage.setTitle(NAME);
         stage.setScene(new Scene(rootNode, 520, 300));
         stage.setResizable(false);
         stage.setOnCloseRequest(this::hide);
@@ -67,7 +71,13 @@ public class ReminderClient extends Application {
 
         final SystemTray systemTray = SystemTray.getSystemTray();
         try {
-            trayIcon = new TrayIcon(ImageIO.read(getClass().getResourceAsStream("icon.png")), "Reminder Center", createTrayMenu());
+            if (SystemUtils.IS_OS_WINDOWS) {
+                trayIcon = new TrayIcon(ImageIO.read(getClass().getResourceAsStream("icon.png")), NAME, createTrayMenu());
+            } else {
+                // AWT tray icons are broken in linux
+                // so use non transparent icon
+                trayIcon = new TrayIcon(ImageIO.read(getClass().getResourceAsStream("tray-mint.png")), NAME, createTrayMenu());
+            }
         } catch (final IOException e) {
             log.error("Could not load tray icon", e);
             return;
